@@ -9,7 +9,11 @@
 <script>
 $(document).ready(function(e) {
     
-	$('#nestthis').nester();
+	var test = $('#nestthis').nester();
+	
+	$(document).mouseup(function(e) {
+        $('#debug').append(test);
+    });
 	
 });
 </script>

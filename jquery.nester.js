@@ -80,7 +80,7 @@
 				});
 
 				$(element).find('li').not(origin).on('dragout', function(e){
-					//$('#debug').append('dragout<br>');
+					
 				});
 				
 				
@@ -89,13 +89,6 @@
 				
 				
 			});
-			
-			
-			
-			
-			
-			
-			
 			
 			
 			
@@ -121,7 +114,6 @@
 				$(document).off('dragin, dragout, drag');
 				origin.css('opacity', 1);
 			});
-			
 			
 			
 			
