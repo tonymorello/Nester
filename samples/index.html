@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Nester.js</title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script src="../../dragg/jquery.dragg.min.js"></script>
+<script src="../jquery.nester.js"></script>
+<script>
+$(document).ready(function(e) {
+    
+	$('#nestthis').nester();
+	
+});
+</script>
+<style>
+ul{
+	border: thin solid #09C;	
+}
+ul li {
+	border: thin solid #F00;
+	margin: 2px;
+}
+ul ul{
+	border: thin solid #693;
+}
+ul ul li{
+	border: thin solid #F63;
+}
+</style>
+</head>
+
+<body>
+
+<ul id="nestthis">
+  <li>
+  	Item 1
+    <ul>
+    	<li>Item 1.1</li>
+        <li>Item 1.2</li>
+    </ul>
+  </li>
+  <li>Item 2</li>
+  <li>Item 3</li>
+  <li>Item 4</li>
+  <li>Item 5</li>
+</ul>
+<div id="debug">&nbsp;</div>
+</body>
+</html>
