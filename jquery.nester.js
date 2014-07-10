@@ -16,6 +16,7 @@
 				grabX,
 				pageY,
 				pageX,
+				helper,
 				target,
 				offset,
 				height,
@@ -26,71 +27,52 @@
 			children.dragg();
 						
 			$(element).on('dragstart', 'li', function(e){
-				
+								
 				e.stopPropagation();
 				
-				origin 	= $(this);
-				//parent	= origin.parent();
-								
+				origin = $(this);
+				helper = $('#helper');
+				target = '';
 				grabY = pageY;
 				grabX = pageX;
-				
 				mouse = "down";
 				
-				origin.find('li').toggleClass('no-target');
+				origin.toggleClass('no-target').find('li').toggleClass('no-target');
 				
-				
-				$(element).find('li').not(origin).on('dragin', function(e){
-					
+				$(element).find('li').on('dragin', function(e){
 					e.stopPropagation();
-					
 					if(!$(this).hasClass('no-target')){
-					
-						//$('#debug').append('dragin<br>');
-						
 						target = $(this);
 						offset = target.offset();
 						height = target.height();
 						bottom = offset.top+height;
-						
-						
-						$(document).on('drag', function(e){
-													
-							if($('#helper').offset().left>=(offset.left+10)){
-								
-								if(target.children('ul').length==0){
-									target.append('<ul></ul>');
-									target.children('ul').append(origin);
-								}
-								
-							}
-							else {
-								if(pageY>(offset.top+(height/2))){
-									target.after(origin);
-								}
-								else if(pageY<bottom){
-									target.before(origin);
-								}
-								else target.after(origin);
-							}
-						});
-						
 					}
-					
 				});
 
-				$(element).find('li').not(origin).on('dragout', function(e){
+				$(element).find('li').on('dragout', function(e){
 					
 				});
-				
-				
-				
-				
-				
-				
 			});
 			
 			
+			$(document).on('drag', function(e){
+				if(target){
+					if(helper.offset().left>=(offset.left+10)){
+						if(target.children('ul').length==0){
+							target.append('<ul></ul>').children('ul').append(origin);
+						}
+					}
+					else {
+						if(pageY>(offset.top+(height/2))){
+							target.after(origin);
+						}
+						else if(pageY<bottom){
+							target.before(origin);
+						}
+						else target.after(origin);
+					}
+				}
+			});
 			
 			
 			$(document).on('mousemove', function(e){
@@ -99,22 +81,19 @@
 				if(mouse=='down'){
 					origin.css('visibility', '');
 					origin.css('opacity', 0.5);
-					
 					$(element).find('li').children('ul').each(function(index, element) {
 						if($(this).children('li').length==0) $(this).remove();
                     });
-					
 				}
 			});
 			
 			
 			$(document).on('drop', element, function(e){
 				mouse = 'up';
-				origin.find('li').toggleClass('no-target');
-				$(document).off('dragin, dragout, drag');
-				origin.css('opacity', 1);
+				origin.toggleClass('no-target').find('li').toggleClass('no-target');
+				$(document).off('dragin, dragout');
+				origin.css('opacity', '');
 			});
-			
 			
 			
 		}
