@@ -14,15 +14,14 @@ $(document).ready(function(e) {
 		
 		var arr = $(this).nester('toArray', { parser : parser });
 		
-		console.log(arr);
 		
 	}
 	var dropAction2 = function(){ 
 		
-		$(this).nester('destroy');
+		//$(this).nester('destroy');
 		
 	}
-	$('#nestthis').nester({	onDrop : dropAction2 });
+	$('#nestthis').nester({	onDrop : dropAction2, tollerateChild : 'div' });
 	
 });
 </script>
@@ -36,16 +35,16 @@ li{
 <body>
 
 <ul id="nestthis">
-  <li id="1">Item 1
+  <li id="1"><div class="button">Item 1</div>
     <ul>
-    	<li id="1.1">Item 1.1</li>
-        <li id="1.2">Item 1.2</li>
+    	<li id="1.1"><div class="button">Item 1.1</div></li>
+        <li id="1.2"><div class="button">Item 1.2</div></li>
     </ul>
   </li>
-  <li id="2">Item 2</li>
-  <li id="3">Item 3</li>
-  <li id="4">Item 4</li>
-  <li id="5">Item 5</li>
+  <li id="2"><div class="button">Item 2</div></li>
+  <li id="3"><div class="button">Item 3</div></li>
+  <li id="4"><div class="button">Item 4</div></li>
+  <li id="5"><div class="button">Item 5</div></li>
 </ul>
 <div id="debug">&nbsp;</div>
 </body>

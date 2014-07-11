@@ -21,6 +21,19 @@
 		children = $this.find('li');
 		children.dragg();
 		
+		
+		if(options.tolerateChild!=null) options.tolerateChild = ' > '+options.tolerateChild
+		
+		
+		// pass the event down to the parent li
+		$this.on('mousedown', 'li'+options.tolerateChild, function(e){
+			$(this).parent('li').trigger('mousedown');
+		});
+		// pass the event drag to the parent li
+		$this.on('drag', 'li'+options.tolerateChild, function(e){
+			$(this).parent('li').trigger('drag');
+		});
+		
 		$this.on('dragstart', 'li', function(e){
 			
 			e.stopPropagation();
@@ -41,27 +54,26 @@
 				options.onStart.call($this);
 			}
 			
-			$this.find('li').on('dragin', function(e){
+			$this.find('li > div').on('dragin', function(e){
 				e.stopPropagation();
-				if(!$(this).hasClass('no-target')){
-						target = $(this);
-						offset = target.offset();
-						height = target.height();
-						bottom = offset.top+height;
+				if(!$(this).parent().hasClass('no-target')){
+					target = $(this).parent();
+					offset = target.offset();
+					height = target.height();
+					bottom = offset.top+height;
 				}
 			});
 
-			$this.find('li').on('dragout', function(e){
+			$this.find('li'+options.tolerateChild).on('dragout', function(e){
 				
 			});
 		});
 		
 		$(document).on('drag', function(e){
+			
 			if(target){
-				
 				var parents_limit = target.parents('li').length;
 				var children_limit = origin.find(options.listType+' li').length+parents_limit;
-				
 				
 				if(
 				(helper.offset().left>=(offset.left+10)) &&
@@ -113,7 +125,7 @@
 		
 	var getHierarchy = function(options){
 		
-		var root = $(this).children('li').not('#helper');
+		var root = $(this).children('li').not(helper);
 		var elements = jQuery.makeArray(root);
 		var finalArray = new Array();
 		
@@ -140,7 +152,7 @@
 	
 	var getArray = function(options){
 		
-		var root = $(this).find('li').not('#helper');
+		var root = $(this).find('li').not(helper);
 		var elements = jQuery.makeArray(root);
 		var finalArray = new Array();
 		
@@ -165,7 +177,7 @@
 	
 	var getSerialized = function(options){
 		
-		var root = $(this).find('li').not('#helper');
+		var root = $(this).find('li').not(helper);
 		var elements = jQuery.makeArray(root);
 		var serialized = '';
 		
@@ -212,9 +224,6 @@
 		
 		
 	}
-
-	
-	
 	
 	$.fn.nester = function(method, options) { 
 		
@@ -226,6 +235,7 @@
 		var defaults = {
 			maxLevels : 3,
 			listType : 'ul',
+			tolerateChild : null, // Sometimes it's a challenge :P
 			parser: function(){return $(this).index();},
 			onStart : function(){},
 			onDrag : function(){},
