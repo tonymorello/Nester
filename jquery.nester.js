@@ -19,7 +19,7 @@
 		$this = $(this);
 		
 		children = $this.find('li');
-		children.dragg();
+		children.dragg({ helper : options.helper });
 		
 		
 		if(options.tolerateChild!=null) options.tolerateChild = ' > '+options.tolerateChild
@@ -39,11 +39,21 @@
 			e.stopPropagation();
 			
 			origin = $(this);
-			helper = $('#helper');
+			helper = $('#'+options.helper);
 			target = '';
 			grabY = pageY;
 			grabX = pageX;
 			mouse = "down";
+			
+			helper.find('li').andSelf().css({
+				'list-style' : origin.css('list-style'),
+				'margin' : origin.css('margin')
+			});
+			
+			if(options.collapse){
+				helper.find(options.listType).slideUp('fast');
+				origin.find(options.listType).hide();
+			}
 			
 			origin.css('visibility', '');
 			origin.css('opacity', 0.5);
@@ -54,33 +64,47 @@
 				options.onStart.call($this);
 			}
 			
-			$this.find('li > div').on('dragin', function(e){
+			$this.find('li'+options.tolerateChild).on('dragin', function(e){
 				e.stopPropagation();
-				if(!$(this).parent().hasClass('no-target')){
-					target = $(this).parent();
+				if(!$(this).parent().hasClass('no-target')){ //////// NEEDS REFACTORING
+					
+					var upperLevel = $(this).parent().parent().parent();
+					
+					if(helper.offset().left>=($(this).parent().offset().left) && (!$.contains(upperLevel, $this))){
+						target = $(this).parent('li');
+					}
+					else{
+						target = upperLevel;
+					}
+					//target = $(this).parent();
 					offset = target.offset();
 					height = target.height();
 					bottom = offset.top+height;
+					
 				}
+				
 			});
 
 			$this.find('li'+options.tolerateChild).on('dragout', function(e){
-				
+				//target = '';
 			});
 		});
 		
 		$(document).on('drag', function(e){
 			
 			if(target){
-				var parents_limit = target.parents('li').length;
-				var children_limit = origin.find(options.listType+' li').length+parents_limit;
+				var totalParents = target.parents('li').length;
+				var totalChildren = origin.find(options.listType+' li').length+totalParents;
 				
 				if(
-				(helper.offset().left>=(offset.left+10)) &&
-				(parents_limit<(options.maxLevels-1)) &&
-				(children_limit<(options.maxLevels-1))
+				(helper.offset().left>=(offset.left+options.treshold)) &&
+				(totalParents<(options.maxLevels-1)) &&
+				(totalChildren<(options.maxLevels-1))
 				)
 				{
+					
+					
+					
 					if(target.children(options.listType).length==0){
 						target.append('<'+options.listType+'></'+options.listType+'>').children(options.listType).append(origin);
 					}
@@ -94,7 +118,12 @@
 					}
 					else target.after(origin);
 				}
+				
+				console.log(target);
+				
 			}
+			
+			
 			if($.isFunction(options.onDrag)) {
 				options.onDrag.call($this);
 			}
@@ -125,7 +154,7 @@
 		
 	var getHierarchy = function(options){
 		
-		var root = $(this).children('li').not(helper);
+		var root = $(this).children('li').not('#'+options.helper);
 		var elements = jQuery.makeArray(root);
 		var finalArray = new Array();
 		
@@ -152,7 +181,7 @@
 	
 	var getArray = function(options){
 		
-		var root = $(this).find('li').not(helper);
+		var root = $(this).find('li').not('#'+options.helper);
 		var elements = jQuery.makeArray(root);
 		var finalArray = new Array();
 		
@@ -165,7 +194,7 @@
 			}
 			
 			subArray.item = options.parser.call(element);
-			subArray.parent = options.parser.call($(element).parent(options.listType).parent('li')) || 'root';
+			subArray.parent = options.parser.call($(element).parent(options.listType).parent('li')) || options.root;
 		
 			finalArray.push(subArray);
 			
@@ -177,7 +206,7 @@
 	
 	var getSerialized = function(options){
 		
-		var root = $(this).find('li').not(helper);
+		var root = $(this).find('li').not('#'+options.helper);
 		var elements = jQuery.makeArray(root);
 		var serialized = '';
 		
@@ -232,13 +261,17 @@
 		}
 		
 		var defaults = {
-			maxLevels : 3,
-			listType : 'ul',
-			tolerateChild : null, // Sometimes it's a challenge :P
-			parser: function(){return $(this).index();},
-			onStart : function(){},
-			onDrag : function(){},
-			onDrop : function(){}
+			helper			: 'helper',
+			maxLevels		: 3,
+			treshold		: 20,
+			listType 		: 'ul',
+			tolerateChild 	: null, // Sometimes it's a challenge :P
+			collapse		: true,
+			parser			: function(){return $(this).index();},
+			root			: 'root',
+			onStart 		: function(){},
+			onDrag 			: function(){},
+			onDrop 			: function(){}
 		}; 
 		
 		var options = $.extend({}, defaults, options);
