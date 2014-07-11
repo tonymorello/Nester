@@ -222,7 +222,6 @@
 			return getSerialized.call(this, options);
 		}
 		
-		
 	}
 	
 	$.fn.nester = function(method, options) { 
