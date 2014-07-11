@@ -2,15 +2,6 @@
 	
 	var runNester = function(options){
 		
-		var defaults = {
-			maxLevels : 4,
-			onStart : function(){},
-			onDrag : function(){},
-			onDrop : function(){}
-		}; 
-		
-		var options = $.extend({}, defaults, options); 
-		
 		var $this,
 			children,
 			origin,
@@ -47,7 +38,7 @@
 			origin.toggleClass('no-target').find('li').toggleClass('no-target');
 			
 			if($.isFunction(options.onStart)) {
-				options.onStart.call(this);
+				options.onStart.call($this);
 			}
 			
 			$this.find('li').on('dragin', function(e){
@@ -69,9 +60,8 @@
 			if(target){
 				
 				var parents_limit = target.parents('li').length;
-				var children_limit = origin.find('ul li').length+parents_limit;
+				var children_limit = origin.find(options.listType+' li').length+parents_limit;
 				
-				console.log(children_limit);
 				
 				if(
 				(helper.offset().left>=(offset.left+10)) &&
@@ -79,8 +69,8 @@
 				(children_limit<(options.maxLevels-1))
 				)
 				{
-					if(target.children('ul').length==0){
-						target.append('<ul></ul>').children('ul').append(origin);
+					if(target.children(options.listType).length==0){
+						target.append('<'+options.listType+'></'+options.listType+'>').children(options.listType).append(origin);
 					}
 				}
 				else {
@@ -94,7 +84,7 @@
 				}
 			}
 			if($.isFunction(options.onDrag)) {
-				options.onDrag.call(this);
+				options.onDrag.call($this);
 			}
 		});
 		
@@ -102,90 +92,28 @@
 			pageY = e.pageY;
 			pageX = e.pageX;
 			if(mouse=='down'){
-				$this.find('li').children('ul').each(function(index, element) {
+				$this.find('li').children(options.listType).each(function(index, element) {
 					if($(this).children('li').length==0) $(this).remove();
 				});
 			}
 		});
 		
-		$(document).on('drop', $this, function(e){
+		$(document).on('drop', function(e){
 			mouse = 'up';
 			origin.toggleClass('no-target').find('li').toggleClass('no-target');
 			$(document).off('dragin, dragout');
 			origin.css('opacity', '');
 			if($.isFunction(options.onDrop)) {
-				options.onDrop.call(this);
+				options.onDrop.call($this);
 			}
 		});
 		
 	}
 	
-	
-	var methods = {
 		
-		init : function(options){
-			
-			return this.each(function(e){
-				
-				runNester.call(this, options);
-				
-			});
-			
-		},
-		destroy: function(options) {
-			return $(this).each(function() {
-				var $this = $(this);
-				
-				
-				$($this).off('dragstart');
-				$($this).off('drag');
-				$(document).off('mousemove');
-				$(document).off('drop');
-				
-				$this.removeData('nester');
-				
-			});
-		},
-		toHierarchy: function(options) {
-			
-			var defaults = {
-				parser: function(){return $(this).index();}
-			}; 
-			
-			var options = $.extend({}, defaults, options);
-			
-			return getHierarchy.call(this, options);
-			
-		},
-		toArray: function(options) {
-			
-			var defaults = {
-				parser: function(){return $(this).index();}
-			}; 
-			
-			var options = $.extend({}, defaults, options);
-			
-			return getArray.call(this, options);
-			
-		},
-		serialize: function(options) {
-			
-			var defaults = {
-				parser: function(){return $(this).index();}
-			}; 
-			
-			var options = $.extend({}, defaults, options);
-							
-			return getSerialized.call(this, options);
-			
-		}
-		
-		
-	}
-	
 	var getHierarchy = function(options){
 		
-		var root = $(this).children('li');
+		var root = $(this).children('li').not('#helper');
 		var elements = jQuery.makeArray(root);
 		var finalArray = new Array();
 		
@@ -199,7 +127,7 @@
 			
 			subArray.item = options.parser.call(this);
 			
-			var children = $(this).children('ul');
+			var children = $(this).children(options.listType);
 			if(children.length>0) subArray.children = getHierarchy.call(children, options);
 			
 			finalArray.push(subArray);
@@ -212,7 +140,7 @@
 	
 	var getArray = function(options){
 		
-		var root = $(this).find('li');
+		var root = $(this).find('li').not('#helper');
 		var elements = jQuery.makeArray(root);
 		var finalArray = new Array();
 		
@@ -225,7 +153,7 @@
 			}
 			
 			subArray.item = options.parser.call(element);
-			subArray.parent = options.parser.call($(element).parent('ul').parent('li')) || 'root';
+			subArray.parent = options.parser.call($(element).parent(options.listType).parent('li')) || 'root';
 		
 			finalArray.push(subArray);
 			
@@ -237,7 +165,7 @@
 	
 	var getSerialized = function(options){
 		
-		var root = $(this).find('li');
+		var root = $(this).find('li').not('#helper');
 		var elements = jQuery.makeArray(root);
 		var serialized = '';
 		
@@ -250,7 +178,7 @@
 			}
 			
 			serialized += 'item['+options.parser.call(element)+']=';
-			serialized += options.parser.call($(element).parent('ul').parent('li')) || null;
+			serialized += options.parser.call($(element).parent(options.listType).parent('li')) || null;
 			
         });
 		
@@ -258,16 +186,56 @@
 		
 	}
 	
-	$.fn.nester = function(method, options) {
+	
+	var methods = {
+		
+		init : function(options){
+			return this.each(function(e){
+				runNester.call(this, options);
+			});
+		},
+		destroy: function(options) {
+			return $(this).each(function() {
+				var $this = $(this);
+				$this.find('li').dragg('destroy');
+			});
+		},
+		toHierarchy: function(options) {
+			return getHierarchy.call(this, options);
+		},
+		toArray: function(options) {
+			return getArray.call(this, options);
+		},
+		serialize: function(options) {
+			return getSerialized.call(this, options);
+		}
+		
+		
+	}
+
+	
+	
+	
+	$.fn.nester = function(method, options) { 
 		
 		if(!method || jQuery.isPlainObject(method) || !methods[method]){
 			options = method;
 			method = 'init';
 		}
 		
+		var defaults = {
+			maxLevels : 3,
+			listType : 'ul',
+			parser: function(){return $(this).index();},
+			onStart : function(){},
+			onDrag : function(){},
+			onDrop : function(){}
+		}; 
+		
+		var options = $.extend({}, defaults, options);
+		
 		return methods[method].call(this, options);
 		
-					
 	}
 	
 	

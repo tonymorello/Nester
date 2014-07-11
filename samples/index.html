@@ -9,7 +9,20 @@
 <script>
 $(document).ready(function(e) {
     
-	$('#nestthis').nester();
+	var parser = function(){ return $(this).attr('id');}
+	var dropAction = function(){ 
+		
+		var arr = $(this).nester('toArray', { parser : parser });
+		
+		console.log(arr);
+		
+	}
+	var dropAction2 = function(){ 
+		
+		$(this).nester('destroy');
+		
+	}
+	$('#nestthis').nester({	onDrop : dropAction2 });
 	
 });
 </script>
